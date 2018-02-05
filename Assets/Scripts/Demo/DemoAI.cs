@@ -21,25 +21,25 @@ namespace Demo
         public float ShootRandom = 5f;
         public Color ShotColor = new Color(0f, 1f, 1f, .5f);
         
-        public NavMeshAgent agent { get; private set; }
-        public Animator animator { get; private set; }
+        public NavMeshAgent Agent { get; private set; }
+        public Animator Animator { get; private set; }
 
         public Transform Transform { get; private set; }
-        private float targetDistance = 10f;
+        private float _targetDistance = 10f;
         
         private DemoShooterDebug _shooterDebug;
         public DemoShooterDebug ShooterDebug => _shooterDebug ?? (_shooterDebug = GetComponent<DemoShooterDebug>());
 
-        private float shotCooldown = 1f; //wait a second for history to build
+        private float _shotCooldown = 1f; //wait a second for history to build
 
         private void Start()
         {
-            agent = GetComponentInChildren<NavMeshAgent>();
-            agent.speed = Speed;
-            animator = GetComponent<Animator>();
+            Agent = GetComponentInChildren<NavMeshAgent>();
+            Agent.speed = Speed;
+            Animator = GetComponent<Animator>();
             Transform = transform;
             
-            animator.SetFloat("Forward", .5f);
+            Animator.SetFloat("Forward", .5f);
         }
 
         private void Update()
@@ -47,10 +47,10 @@ namespace Demo
             if (!Roam)
                 return;
 
-            if (agent.remainingDistance <= agent.stoppingDistance)
-                agent.SetDestination(FindNewTarget());
+            if (Agent.remainingDistance <= Agent.stoppingDistance)
+                Agent.SetDestination(FindNewTarget());
             else
-                animator.SetFloat("Forward", Mathf.Max(agent.remainingDistance / targetDistance, .8f) + .2f);
+                Animator.SetFloat("Forward", Mathf.Max(Agent.remainingDistance / _targetDistance, .8f) + .2f);
         }
 
         private void FixedUpdate()
@@ -58,11 +58,11 @@ namespace Demo
             if (!Shoot)
                 return;
             
-            shotCooldown -= Time.fixedDeltaTime;
-            if (shotCooldown <= 0f)
+            _shotCooldown -= Time.fixedDeltaTime;
+            if (_shotCooldown <= 0f)
             {
                 Fire();
-                shotCooldown = ShootFrequency + Random.Range(0f, ShootRandom);
+                _shotCooldown = ShootFrequency + Random.Range(0f, ShootRandom);
             }
         }
 
@@ -93,7 +93,7 @@ namespace Demo
                 currPos.x + rand.x * RoamDistance,
                 currPos.y,
                 currPos.z + rand.y * RoamDistance);
-            targetDistance = Vector3.Distance(currPos, dest);
+            _targetDistance = Vector3.Distance(currPos, dest);
             return dest;
         }
 

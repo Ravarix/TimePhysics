@@ -13,8 +13,8 @@ namespace Hitbox
             Unknown = 0,
             Box,
             Sphere
-    
-        
+        }
+
         //DAT CA$HE
         public Collider Collider { get; private set; }
         public Shape shape { get; private set; }

@@ -146,19 +146,7 @@ namespace Unitilities
             matrix.m23 = offset.z;
             return matrix;
         }
-
-        public static void LerpMatrix(ref Matrix4x4 matrix1, ref Matrix4x4 matrix2, float lerpVal, 
-            out Vector3 position, out Quaternion rotation)
-        {
-            var pos1 = ExtractTranslationFromMatrix(ref matrix1);
-            var pos2 = ExtractTranslationFromMatrix(ref matrix2);
-            var rot1 = ExtractRotationFromMatrix(ref matrix1);
-            var rot2 = ExtractRotationFromMatrix(ref matrix2);
-
-            position = Vector3.Lerp(pos1, pos2, lerpVal);
-            rotation = Quaternion.Lerp(rot1, rot2, lerpVal);
-        }
-
+        
         public static Matrix4x4 LerpMatrix(ref Matrix4x4 matrix1, ref Matrix4x4 matrix2, float lerpVal)
         {
             Vector3 pos1, pos2;
@@ -174,6 +162,18 @@ namespace Unitilities
         }
 
         //Faster version that doesnt lerp scale
+        public static void LerpMatrixTR(ref Matrix4x4 matrix1, ref Matrix4x4 matrix2, float lerpVal, 
+            out Vector3 position, out Quaternion rotation)
+        {
+            var pos1 = ExtractTranslationFromMatrix(ref matrix1);
+            var pos2 = ExtractTranslationFromMatrix(ref matrix2);
+            var rot1 = ExtractRotationFromMatrix(ref matrix1);
+            var rot2 = ExtractRotationFromMatrix(ref matrix2);
+
+            position = Vector3.Lerp(pos1, pos2, lerpVal);
+            rotation = Quaternion.Lerp(rot1, rot2, lerpVal);
+        }
+        
         public static Matrix4x4 LerpMatrixTR(ref Matrix4x4 matrix1, ref Matrix4x4 matrix2, float lerpVal, Vector3 scale)
         {
             var pos1 = ExtractTranslationFromMatrix(ref matrix1);

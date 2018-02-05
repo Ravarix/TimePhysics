@@ -10,18 +10,19 @@ namespace Demo
     {
         public Color DebugHitColor = new Color(1f, 0f, 0f, .5f);
         public Dictionary<DebugHit, float> DebugHits = new Dictionary<DebugHit, float>(512);
-        public List<DebugHit> DebugHitsList = new List<DebugHit>();
-        public List<DebugHit> tempList = new List<DebugHit>(16);
+        private readonly List<DebugHit> _tempList = new List<DebugHit>(32);
         
         public struct DebugHit : IEquatable<DebugHit>
         {
             public Matrix4x4 LocalToWorld;
             public readonly HitboxMarkerDebug HitboxMarkerDebug;
+            public int Frame;
 
-            public DebugHit(Matrix4x4 localToWorld, HitboxMarkerDebug hitboxMarkerDebug)
+            public DebugHit(Matrix4x4 localToWorld, HitboxMarkerDebug hitboxMarkerDebug, int frame)
             {
                 LocalToWorld = localToWorld;
                 HitboxMarkerDebug = hitboxMarkerDebug;
+                Frame = frame;
             }
 
             public override int GetHashCode()
@@ -36,7 +37,7 @@ namespace Demo
 
             public bool Equals(DebugHit other)
             {
-                return other.GetHashCode() == GetHashCode();
+                return other.GetHashCode() == GetHashCode() && other.Frame == Frame;
             }
         }
 
@@ -44,21 +45,21 @@ namespace Demo
         {
             DebugHits[new DebugHit(
                 markerDebug.Trans.localToWorldMatrix,
-                markerDebug)] = duration;
-
-//            DebugHitsList.Add(new DebugHit(
-//                markerDebug.Trans.localToWorldMatrix,
-//                markerDebug));
+                markerDebug,
+                TimePhysics.WorldFrame)] = duration;
         }
         
         private void OnDrawGizmos()
         {
-            tempList.Clear();
-            foreach (var key in DebugHits.Keys)
-                tempList.Add(key);
+            foreach (var kvp in DebugHits)
+                HitboxBodyDebug.DrawMarkerGizmo(kvp.Key.LocalToWorld, kvp.Key.HitboxMarkerDebug, DebugHitColor, false);
+            
+            _tempList.Clear();
+            foreach (var kvp in DebugHits)
+                _tempList.Add(kvp.Key);
 
             var dt = Time.deltaTime;
-            foreach (var key in tempList)
+            foreach (var key in _tempList)
             {
                 var time = DebugHits[key];
                 time -= dt;
@@ -67,13 +68,6 @@ namespace Demo
                 else
                     DebugHits[key] = time;
             }
-
-            foreach (var hit in DebugHits.Keys)
-                HitboxBodyDebug.DrawMarkerGizmo(hit.LocalToWorld, hit.HitboxMarkerDebug, DebugHitColor, false);
-
-//            foreach (var hit in DebugHitsList)
-//                HitboxBodyDebug.DrawMarkerGizmo(hit.LocalToWorld, hit.HitboxMarkerDebug, DebugHitColor, false);
-//            DebugHitsList.Clear();
             
             Gizmos.matrix = Matrix4x4.identity;
             Gizmos.color = Color.white;

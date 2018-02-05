@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Profiling;
+using Object = UnityEngine.Object;
 
 namespace Hitbox
 {
-    public class TimePhysics
+    public static class TimePhysics
     {
         // Usually 1 second of snapshots is more than enough
         public const int NumSnapshots = 60;
@@ -55,7 +56,7 @@ namespace Hitbox
 
             public RewindState(float seconds)
             {
-                var lerpFrame = seconds / Time.fixedDeltaTime;
+                var lerpFrame = WorldFrame - seconds / Time.fixedDeltaTime;
                 Frame = Mathf.FloorToInt(lerpFrame);
                 Frame2 = Mathf.CeilToInt(lerpFrame);
                 LerpVal = lerpFrame - Frame;
@@ -87,14 +88,23 @@ namespace Hitbox
                 if(Valid)
                     Restore();
             }
+
+            public override string ToString()
+            {
+                if (!Valid)
+                    return "INVALID";
+                return Lerp ? $"{nameof(Frame)}: {Frame}, {nameof(Frame2)}: {Frame2}, {nameof(LerpVal)}: {LerpVal}" 
+                            : $"{nameof(Frame)}: {Frame}";
+            }
         }
-        
+
+        [RuntimeInitializeOnLoadMethod] private static void Init() { var go = Clock; } // needed to JIT?
         //shitty cached singleton pattern because we need a GO to get FixedUpdate and start recording.
         //call it a 'Global Behavior' to feel better.
         private static TimePhysicsClock _clock;
-        public static TimePhysicsClock Clock => 
+        public static TimePhysicsClock Clock =>
             _clock 
-            ?? (_clock = GameObject.FindObjectOfType<TimePhysicsClock>()) 
+            ?? (_clock = Object.FindObjectOfType<TimePhysicsClock>()) 
             ?? (_clock = GetNewInstance()); 
         
         private static TimePhysicsClock GetNewInstance()
