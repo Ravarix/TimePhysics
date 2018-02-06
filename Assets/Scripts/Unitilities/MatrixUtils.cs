@@ -18,7 +18,6 @@ namespace Unitilities
                 max = new Vector3(m.m03, m.m13, m.m23)
             };
 
-
             for (int i = 0; i < 3; i++)
             {
                 for (int j = 0; j < 3; j++)

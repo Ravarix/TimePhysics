@@ -293,8 +293,7 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4146111764072750}
-  - component: {fileID: 135619618863263886}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: EthanSkeleton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -418,9 +417,9 @@ GameObject:
   - component: {fileID: 136959923936083376}
   - component: {fileID: 114587874238987288}
   - component: {fileID: 195711734280216100}
-  - component: {fileID: 114025355901808078}
   - component: {fileID: 114237639718775024}
-  - component: {fileID: 114250758292601644}
+  - component: {fileID: 114408331624392018}
+  - component: {fileID: 114054366254159082}
   m_Layer: 2
   m_Name: Testbody
   m_TagString: Untagged
@@ -1326,7 +1325,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1400861405073440}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 18.19, y: 0, z: 20.03}
+  m_LocalPosition: {x: -8.001, y: 0, z: -19.8}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4271102967019138}
@@ -1432,7 +1431,7 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1899207729901978}
-  m_LocalRotation: {x: 0.53267515, y: 0.07034045, z: 0.83613265, w: -0.11041513}
+  m_LocalRotation: {x: 0.5326752, y: 0.070340455, z: 0.83613276, w: -0.110415146}
   m_LocalPosition: {x: 0.000022271464, y: -0.00006150465, z: 0.026027026}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -2600,7 +2599,7 @@ Animator:
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
---- !u!114 &114025355901808078
+--- !u!114 &114054366254159082
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
@@ -2613,7 +2612,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _debugType: 0
   _frameDelay: 30
-  _hitboxColor: {r: 0.018090416, g: 0.8241379, b: 0, a: 0.5}
+  _hitboxColor: {r: 0, g: 1, b: 0, a: 0.5}
   _proximityColor: {r: 0, g: 0, b: 1, a: 0.15}
 --- !u!114 &114237639718775024
 MonoBehaviour:
@@ -2627,7 +2626,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   DebugHitColor: {r: 1, g: 0, b: 0, a: 0.5}
---- !u!114 &114250758292601644
+--- !u!114 &114408331624392018
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
@@ -2639,7 +2638,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _snapshotFrequency: 10
-  _proximityCollider: {fileID: 135619618863263886}
+  _bounds:
+    m_Center: {x: 0, y: 1, z: 0}
+    m_Extent: {x: 1, y: 1, z: 1}
   _transforms:
   - {fileID: 4829806116573264}
   - {fileID: 4660523124912656}
@@ -2689,25 +2690,13 @@ SphereCollider:
   serializedVersion: 2
   m_Radius: 0.11
   m_Center: {x: -0.08, y: 0, z: 0}
---- !u!135 &135619618863263886
-SphereCollider:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1303213785039776}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 1
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.93
-  m_Center: {x: 0, y: 0.82, z: 0}
 --- !u!136 &136959923936083376
 CapsuleCollider:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1400861405073440}
-  m_Material: {fileID: 13400000, guid: c2815a7ab32e42c4bb42f59caacb8ec1, type: 2}
+  m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
   m_Radius: 0.3

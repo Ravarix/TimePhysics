@@ -8,10 +8,12 @@ namespace Hitbox
     
     public class HitboxBody : MonoBehaviour
     {
+        [Tooltip("Must be factor of TimePhysics.NumSnapshots")]
+        [Range(1, TimePhysics.NumSnapshots)]
         [SerializeField] private int _snapshotFrequency = 1;
         public int SnapshotFrequency => _snapshotFrequency;
-        [SerializeField] private Collider _proximityCollider;
-        public Collider ProximityCollider => _proximityCollider;
+        [SerializeField] private Bounds _bounds = new Bounds(new Vector3(0, 1f, 0f), new Vector3(2f, 2f, 2f));
+        public Bounds Bounds => _bounds;
         [SerializeField] private Transform[] _transforms;
         public Transform[] Transforms { get { return _transforms; } set { _transforms = value; }}
         public int CurrentSnapshotFrame { get; private set; } = -1;
@@ -23,12 +25,6 @@ namespace Hitbox
         private void Awake()
         {
             Snapshots = new HitboxSnapshot[TimePhysics.NumSnapshots];
-            
-            if (_proximityCollider == null)
-            {
-                Debug.LogError("Hitbox Body Must have proximity.");
-                return;
-            }
 
             // Validate all the target hitboxes are populated.
             if (_transforms.Any(entry => entry == null))
@@ -47,14 +43,15 @@ namespace Hitbox
 
         private void OnValidate()
         {
-            if (_proximityCollider == null)
-                Debug.LogError("Must populate ProximityHitbox with Collider");
+            // try and find a divisor so that snapshot frequency is a factor of NumSnapshots
+            int tries = 0;
+            while (TimePhysics.NumSnapshots % _snapshotFrequency != 0 && ++tries <= 4)
+                _snapshotFrequency = TimePhysics.NumSnapshots / (TimePhysics.NumSnapshots / _snapshotFrequency + 1);
         }
 
         private void OnEnable()
         {
-            if(_proximityCollider != null)
-                TimePhysics.RegisterHitboxBody(this);
+           TimePhysics.RegisterHitboxBody(this);
         }
 
         private void OnDisable()
@@ -72,7 +69,8 @@ namespace Hitbox
                 if (frame % _snapshotFrequency == 0)
                 {
                     snapShot.Real = true;
-                    snapShot.ProximityBounds = _proximityCollider.bounds;
+                    var ltw = transform.localToWorldMatrix;
+                    snapShot.ProximityBounds = MatrixUtils.LocalToWorld(ref _bounds, ref ltw);
 
                     //grab LTW for body parts
                     for (int hitboxIndex = 0; hitboxIndex < _transforms.Length; hitboxIndex++)
@@ -84,7 +82,7 @@ namespace Hitbox
                 }
             }
             else
-                Debug.LogError($"Requesting snapshot frame <= current snapshot frame: {frame}, Current : {CurrentSnapshotFrame}", this);
+                Debug.LogError($"Requesting snapshot frame <= current snapshot frame: {frame}, Current: {CurrentSnapshotFrame}", this);
         }
 
         private void TakeRestoreSnapshot()
@@ -274,7 +272,14 @@ namespace Hitbox
             Profiler.EndSample();
             _isRewound = false;
             return true;
-        }   
+        }
 
+        private void OnDrawGizmosSelected()
+        {
+            Gizmos.color = new Color(0f, .8f, .2f, .4f);
+            var ltw = transform.localToWorldMatrix;
+            var bounds = MatrixUtils.LocalToWorld(ref _bounds, ref ltw);
+            Gizmos.DrawWireCube(bounds.center, bounds.size);
+        }
     }
 }

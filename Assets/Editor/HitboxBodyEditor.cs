@@ -16,12 +16,6 @@ namespace Hitbox
 
             DrawDefaultInspector();
 
-            if (hitboxBody.ProximityCollider == null)
-            {
-                EditorGUILayout.HelpBox("No Proximity Collider found!", MessageType.Error);
-                return;
-            }
-            
             if (hitboxBody.Transforms == null || hitboxBody.Transforms.Length == 0)
             {
                 EditorGUILayout.HelpBox("No Hitboxes found", MessageType.Warning);
@@ -33,8 +27,7 @@ namespace Hitbox
         private void FindHitboxes()
         {
             hitboxBody.Transforms = hitboxBody.GetComponentsInChildren<Collider>()
-                .Where(col => col.gameObject != hitboxBody.gameObject //only children
-                              && col != hitboxBody.ProximityCollider) //not proximity
+                .Where(col => col.gameObject != hitboxBody.gameObject) //only children
                 .Select(col => col.transform)
                 .ToArray();
         }

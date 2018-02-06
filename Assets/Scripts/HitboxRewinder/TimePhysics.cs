@@ -34,11 +34,11 @@ namespace Hitbox
         
         public struct RewindState : IDisposable
         {
-            public bool Valid { get; }
-            public bool Lerp { get; }
-            public int Frame { get; }
-            public int Frame2 { get; }
-            public float LerpVal { get; }
+            public readonly bool Valid;
+            public readonly bool Lerp;
+            public readonly int Frame;
+            public readonly int Frame2;
+            public readonly float LerpVal;
 
             public RewindState(int frame)
             {
@@ -110,7 +110,7 @@ namespace Hitbox
         private static TimePhysicsClock GetNewInstance()
         {
             var inst = new GameObject("TimePhysicsClock").AddComponent<TimePhysicsClock>();
-            GameObject.DontDestroyOnLoad(inst);
+            Object.DontDestroyOnLoad(inst);
             return inst;
         }
 

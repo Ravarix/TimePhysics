@@ -29,7 +29,8 @@ public class HitboxBodyDebug : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
-        DrawGizmos();
+        if(_debugType == DebugType.Selected)
+            DrawGizmos();
     }
     
     private void OnDrawGizmos()

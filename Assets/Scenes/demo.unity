@@ -262,7 +262,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   FrameDelay: 30
-  Ping: 0.2
+  Ping: 0.5
   PingJitter: 0.05
   RayDuration: 0.5
   Distance: 30
@@ -437,7 +437,7 @@ Prefab:
     m_Modifications:
     - target: {fileID: 4035232439366262, guid: de290966df4d9a7419c4179a3541cb0c, type: 2}
       propertyPath: m_LocalPosition.x
-      value: -7.03
+      value: -8.001
       objectReference: {fileID: 0}
     - target: {fileID: 4035232439366262, guid: de290966df4d9a7419c4179a3541cb0c, type: 2}
       propertyPath: m_LocalPosition.y
@@ -467,21 +467,27 @@ Prefab:
       propertyPath: m_RootOrder
       value: 4
       objectReference: {fileID: 0}
+    - target: {fileID: 136959923936083376, guid: de290966df4d9a7419c4179a3541cb0c,
+        type: 2}
+      propertyPath: m_Material
+      value: 
+      objectReference: {fileID: 13400000, guid: c2815a7ab32e42c4bb42f59caacb8ec1,
+        type: 2}
     - target: {fileID: 4113596037532306, guid: de290966df4d9a7419c4179a3541cb0c, type: 2}
       propertyPath: m_LocalRotation.x
-      value: 0.53267515
+      value: 0.5326752
       objectReference: {fileID: 0}
     - target: {fileID: 4113596037532306, guid: de290966df4d9a7419c4179a3541cb0c, type: 2}
       propertyPath: m_LocalRotation.y
-      value: 0.07034045
+      value: 0.070340455
       objectReference: {fileID: 0}
     - target: {fileID: 4113596037532306, guid: de290966df4d9a7419c4179a3541cb0c, type: 2}
       propertyPath: m_LocalRotation.z
-      value: 0.83613265
+      value: 0.83613276
       objectReference: {fileID: 0}
     - target: {fileID: 4113596037532306, guid: de290966df4d9a7419c4179a3541cb0c, type: 2}
       propertyPath: m_LocalRotation.w
-      value: -0.11041513
+      value: -0.110415146
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: de290966df4d9a7419c4179a3541cb0c, type: 2}
