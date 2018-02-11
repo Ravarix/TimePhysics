@@ -8,10 +8,10 @@ namespace Hitbox
     
     public class HitboxBody : MonoBehaviour
     {
-        [Tooltip("Must be factor of TimePhysics.NumSnapshots")]
+        [Tooltip("How many framesMust be factor of TimePhysics.NumSnapshots")]
         [Range(1, TimePhysics.NumSnapshots)]
-        [SerializeField] private int _snapshotFrequency = 1;
-        public int SnapshotFrequency => _snapshotFrequency;
+        [SerializeField] private int _snapshotInterval = 1;
+        public int SnapshotInterval => _snapshotInterval;
         [SerializeField] private Bounds _bounds = new Bounds(new Vector3(0, 1f, 0f), new Vector3(2f, 2f, 2f));
         public Bounds Bounds => _bounds;
         [SerializeField] private Transform[] _transforms;
@@ -43,10 +43,12 @@ namespace Hitbox
 
         private void OnValidate()
         {
+            if (_snapshotInterval <= 0)
+                _snapshotInterval = 1;
             // try and find a divisor so that snapshot frequency is a factor of NumSnapshots
             int tries = 0;
-            while (TimePhysics.NumSnapshots % _snapshotFrequency != 0 && ++tries <= 4)
-                _snapshotFrequency = TimePhysics.NumSnapshots / (TimePhysics.NumSnapshots / _snapshotFrequency + 1);
+            while (TimePhysics.NumSnapshots % _snapshotInterval != 0 && ++tries <= 4)
+                _snapshotInterval = TimePhysics.NumSnapshots / (TimePhysics.NumSnapshots / _snapshotInterval + 1);
         }
 
         private void OnEnable()
@@ -66,7 +68,7 @@ namespace Hitbox
                 CurrentSnapshotFrame = frame;
                 var snapShot = Snapshots[index];
                 
-                if (frame % _snapshotFrequency == 0)
+                if (frame % _snapshotInterval == 0)
                 {
                     snapShot.Real = true;
                     var ltw = transform.localToWorldMatrix;
@@ -90,7 +92,6 @@ namespace Hitbox
             if (_isRewound)
                 return;
 
-            //TODO tie this to snapshot index to lazy-populate?
             for (int hitboxIndex = 0; hitboxIndex < _transforms.Length; hitboxIndex++)
                 _restoreSnapshot.LocalToWorld[hitboxIndex] = _transforms[hitboxIndex].localToWorldMatrix;
         }
@@ -137,7 +138,7 @@ namespace Hitbox
 
         public bool OverlapBounds(ref Bounds bounds)
         {
-            if(!TimePhysics.WorldRewindState.Lerp && TimePhysics.WorldRewindState.Frame % _snapshotFrequency == 0)
+            if(!TimePhysics.WorldRewindState.Lerp && TimePhysics.WorldRewindState.Frame % _snapshotInterval == 0)
                 return InternalOverlapBounds(TimePhysics.WorldRewindState.Frame % TimePhysics.NumSnapshots, ref bounds);
             
             int index1, index2;
@@ -147,7 +148,7 @@ namespace Hitbox
 
         public bool Raycast(ref Ray ray, float maxDistance)
         {
-            if (!TimePhysics.WorldRewindState.Lerp && TimePhysics.WorldRewindState.Frame % _snapshotFrequency == 0)
+            if (!TimePhysics.WorldRewindState.Lerp && TimePhysics.WorldRewindState.Frame % _snapshotInterval == 0)
                 return InternalRaycast(TimePhysics.WorldRewindState.Frame % TimePhysics.NumSnapshots, ref ray, maxDistance);
             
             int index1, index2;
@@ -201,13 +202,13 @@ namespace Hitbox
 
         public float LerpFrame(int frame, out int index1, out int index2)
         {
-            var frameVal = ((float) frame % TimePhysics.NumSnapshots) / _snapshotFrequency;
+            var frameVal = ((float) frame % TimePhysics.NumSnapshots) / _snapshotInterval;
             var floor = Mathf.FloorToInt(frameVal);
-            index1 = floor * _snapshotFrequency;
-            index2 = Mathf.CeilToInt(frameVal) * _snapshotFrequency;
+            index1 = floor * _snapshotInterval;
+            index2 = Mathf.CeilToInt(frameVal) * _snapshotInterval;
             if (index2 >= TimePhysics.NumSnapshots)
                 index2 %= TimePhysics.NumSnapshots;
-            float lerpVal = (frameVal - floor) + (TimePhysics.WorldRewindState.LerpVal / _snapshotFrequency);
+            float lerpVal = (frameVal - floor) + (TimePhysics.WorldRewindState.LerpVal / _snapshotInterval);
 
             return lerpVal;
         }
@@ -215,14 +216,14 @@ namespace Hitbox
         public float LerpFrame(int frame1, int frame2, float frameLerp, out int index1, out int index2)
         {
             //need to remap the frame lerp to our own snapshot frequency lerp
-            var frameVal = ((float) frame1 % TimePhysics.NumSnapshots) / _snapshotFrequency;
+            var frameVal = ((float) frame1 % TimePhysics.NumSnapshots) / _snapshotInterval;
             var floor = Mathf.FloorToInt(frameVal);
-            index1 = floor * _snapshotFrequency;
-            var frame2Val = ((float) frame2 % TimePhysics.NumSnapshots) / _snapshotFrequency;
-            index2 = Mathf.CeilToInt(frame2Val) * _snapshotFrequency;
+            index1 = floor * _snapshotInterval;
+            var frame2Val = ((float) frame2 % TimePhysics.NumSnapshots) / _snapshotInterval;
+            index2 = Mathf.CeilToInt(frame2Val) * _snapshotInterval;
             if (index2 >= TimePhysics.NumSnapshots)
                 index2 %= TimePhysics.NumSnapshots;
-            float lerpVal = (frameVal - floor) + (frameLerp / _snapshotFrequency);
+            float lerpVal = (frameVal - floor) + (frameLerp / _snapshotInterval);
             //print($"Frame1: {frame1}, Frame2: {frame2}, FrameLerp: {frameLerp}, out id1 {index1}, id2 {index2}, lerpVal {lerpVal}");
             return lerpVal;
         }
@@ -232,7 +233,7 @@ namespace Hitbox
             if (_isRewound || !TimePhysics.IsWorldRewound)
                 return false;
             
-            if (!TimePhysics.WorldRewindState.Lerp && TimePhysics.WorldRewindState.Frame % _snapshotFrequency == 0)
+            if (!TimePhysics.WorldRewindState.Lerp && TimePhysics.WorldRewindState.Frame % _snapshotInterval == 0)
             {
                 InternalRewind(TimePhysics.WorldRewindState.Frame % TimePhysics.NumSnapshots);
             }

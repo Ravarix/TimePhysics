@@ -420,7 +420,7 @@ GameObject:
   - component: {fileID: 114237639718775024}
   - component: {fileID: 114408331624392018}
   - component: {fileID: 114054366254159082}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: Testbody
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -496,7 +496,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4271102967019138}
   - component: {fileID: 137017136202190026}
-  m_Layer: 2
+  m_Layer: 0
   m_Name: EthanBody
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1025,7 +1025,7 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4911056949932940}
-  - component: {fileID: 65474006354213494}
+  - component: {fileID: 136321694252461402}
   m_Layer: 0
   m_Name: EthanRightArm
   m_TagString: Untagged
@@ -1146,7 +1146,7 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4607871287080486}
-  - component: {fileID: 65109805565712436}
+  - component: {fileID: 136122615482446840}
   m_Layer: 0
   m_Name: EthanLeftArm
   m_TagString: Untagged
@@ -2462,18 +2462,6 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 0.39, y: 0.12, z: 0.12}
   m_Center: {x: -0.12, y: -0.04, z: -0.03}
---- !u!65 &65109805565712436
-BoxCollider:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1920796992299030}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 1
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 0.1, y: 0.1, z: 0.29}
-  m_Center: {x: 0.03, y: 0, z: -0.11}
 --- !u!65 &65127792239319418
 BoxCollider:
   m_ObjectHideFlags: 1
@@ -2498,18 +2486,6 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 0.4, y: 0.15, z: 0.13}
   m_Center: {x: 0.16, y: -0.05, z: -0.01}
---- !u!65 &65474006354213494
-BoxCollider:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1786264948547834}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 1
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 0.1, y: 0.1, z: 0.29}
-  m_Center: {x: 0.03, y: 0, z: 0.11}
 --- !u!65 &65651295562414968
 BoxCollider:
   m_ObjectHideFlags: 1
@@ -2637,7 +2613,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c480f2c9b2cc9ad468115914049a9643, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _snapshotFrequency: 10
+  _snapshotInterval: 6
   _bounds:
     m_Center: {x: 0, y: 1, z: 0}
     m_Extent: {x: 1, y: 1, z: 1}
@@ -2690,6 +2666,32 @@ SphereCollider:
   serializedVersion: 2
   m_Radius: 0.11
   m_Center: {x: -0.08, y: 0, z: 0}
+--- !u!136 &136122615482446840
+CapsuleCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1920796992299030}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  m_Radius: 0.05
+  m_Height: 0.3
+  m_Direction: 2
+  m_Center: {x: 0.03, y: 0, z: -0.1}
+--- !u!136 &136321694252461402
+CapsuleCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1786264948547834}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  m_Radius: 0.05
+  m_Height: 0.3
+  m_Direction: 2
+  m_Center: {x: 0.03, y: 0, z: 0.1}
 --- !u!136 &136959923936083376
 CapsuleCollider:
   m_ObjectHideFlags: 1
@@ -2712,6 +2714,7 @@ SkinnedMeshRenderer:
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
@@ -2727,6 +2730,7 @@ SkinnedMeshRenderer:
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
+  m_StitchLightmapSeams: 0
   m_SelectedEditorRenderState: 3
   m_MinimumChartSize: 4
   m_AutoUVMaxDistance: 0.5

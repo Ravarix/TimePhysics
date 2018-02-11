@@ -73,10 +73,10 @@ namespace Demo
 
             using (TimePhysics.RewindSeconds(ping))
             {
+                Ray ray = new Ray(Transform.position + Vector3.up * ShootHeight, Transform.forward * ShootDistance);
                 RaycastHit hit;
-                var origin = Transform.position + Vector3.up * ShootHeight;
-                Debug.DrawRay(origin, Transform.forward * ShootDistance, ShotColor);
-                if(TimePhysics.Raycast(origin, Transform.forward, ShootDistance, out hit, LayerMask.GetMask("Default")))
+                Debug.DrawRay(ray.origin, ray.direction, ShotColor);
+                if(TimePhysics.Raycast(ray, out hit, ShootDistance, LayerMask.GetMask("Default")))
                 {
                     var marker = hit.collider.GetComponent<HitboxMarkerDebug>();
                     if (marker != null && TimePhysics.DebugMode)

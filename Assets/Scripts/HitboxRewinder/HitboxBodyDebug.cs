@@ -48,7 +48,7 @@ public class HitboxBodyDebug : MonoBehaviour
         if (!TimePhysics.IsFrameValid(frame))
             return;
 
-        if (frame % body.SnapshotFrequency == 0) //if we are on a snapshot
+        if (frame % body.SnapshotInterval == 0) //if we are on a snapshot
         {
             var index = frame % TimePhysics.NumSnapshots;
             var snapShot = body.Snapshots[index];
@@ -94,20 +94,52 @@ public class HitboxBodyDebug : MonoBehaviour
     {
         Gizmos.color = color;
         Gizmos.matrix = matrix;
-            
-        switch (markerDebug.shape)
+        
+        switch (markerDebug.Shape)
         {
-            case HitboxMarkerDebug.Shape.Box:
+            case ColliderShape.Box:
                 if (wire)
                     Gizmos.DrawWireCube(markerDebug.BoxCollider.center, markerDebug.BoxCollider.size);
                 else
                     Gizmos.DrawCube(markerDebug.BoxCollider.center, markerDebug.BoxCollider.size);
                 break;
-            case HitboxMarkerDebug.Shape.Sphere:
+            case ColliderShape.Sphere:
                 if (wire)
                     Gizmos.DrawWireSphere(markerDebug.SphereCollider.center, markerDebug.SphereCollider.radius);
                 else
                     Gizmos.DrawSphere(markerDebug.SphereCollider.center, markerDebug.SphereCollider.radius);
+                break;
+            case ColliderShape.Mesh:
+                if (wire)
+                    Gizmos.DrawWireMesh(markerDebug.Mesh, markerDebug.Pos, markerDebug.Rot, markerDebug.Scale);
+                else
+                    Gizmos.DrawMesh(markerDebug.Mesh, markerDebug.Pos, markerDebug.Rot, markerDebug.Scale);
+                break;
+            case ColliderShape.Capsule:
+                if (wire)
+                {
+                    Gizmos.DrawWireSphere(markerDebug.Point1, markerDebug.Radius);
+                    Gizmos.DrawWireSphere(markerDebug.Point2, markerDebug.Radius);
+                    if (markerDebug.Direction != 0)
+                    {
+                        Gizmos.DrawLine(markerDebug.Point1.Add(x: markerDebug.Radius), markerDebug.Point2.Add(x: markerDebug.Radius));
+                        Gizmos.DrawLine(markerDebug.Point1.Add(x: -markerDebug.Radius), markerDebug.Point2.Add(x: -markerDebug.Radius));
+                    }
+                    if (markerDebug.Direction != 1)
+                    {
+                        Gizmos.DrawLine(markerDebug.Point1.Add(y: markerDebug.Radius), markerDebug.Point2.Add(y: markerDebug.Radius));
+                        Gizmos.DrawLine(markerDebug.Point1.Add(y: -markerDebug.Radius), markerDebug.Point2.Add(y: -markerDebug.Radius));
+                    }
+                    if (markerDebug.Direction != 2)
+                    {
+                        Gizmos.DrawLine(markerDebug.Point1.Add(z: markerDebug.Radius), markerDebug.Point2.Add(z: markerDebug.Radius));
+                        Gizmos.DrawLine(markerDebug.Point1.Add(z: -markerDebug.Radius), markerDebug.Point2.Add(z: -markerDebug.Radius));
+                    }
+                }
+                else
+                {
+                    Gizmos.DrawMesh(markerDebug.Mesh, markerDebug.Pos, markerDebug.Rot, markerDebug.Scale);
+                }
                 break;
         }
     }

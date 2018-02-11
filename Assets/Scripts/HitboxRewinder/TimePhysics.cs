@@ -28,9 +28,9 @@ namespace Hitbox
         #endif
 
         //disposable access pattern
-        public static RewindState RewindWorld(int frame) => new RewindState(frame);
-        public static RewindState RewindFrames(int frames) => new RewindState(WorldFrame - frames);
-        public static RewindState RewindSeconds(float seconds) => new RewindState(seconds); 
+        public static RewindState RewindWorld(int frame, HitboxBody ignore = null) => new RewindState(frame, ignore);
+        public static RewindState RewindFrames(int frames, HitboxBody ignore = null) => new RewindState(WorldFrame - frames, ignore);
+        public static RewindState RewindSeconds(float seconds, HitboxBody ignore = null) => new RewindState(seconds, ignore); 
         
         public struct RewindState : IDisposable
         {
@@ -39,9 +39,11 @@ namespace Hitbox
             public readonly int Frame;
             public readonly int Frame2;
             public readonly float LerpVal;
+            public readonly HitboxBody IgnoreBody;
 
-            public RewindState(int frame)
+            public RewindState(int frame, HitboxBody ignore = null)
             {
+                IgnoreBody = ignore;
                 Frame = frame;
                 Lerp = false;
                 Frame2 = frame;
@@ -51,11 +53,12 @@ namespace Hitbox
                 if(Valid)
                     BeginRewind(this);
                 else
-                    Debug.LogError("Error rewinding");
+                    Debug.LogError($"Error Rewinding. {nameof(WorldFrame)}: {WorldFrame}, {this}");
             }
 
-            public RewindState(float seconds)
+            public RewindState(float seconds, HitboxBody ignore = null)
             {
+                IgnoreBody = ignore;
                 var lerpFrame = WorldFrame - seconds / Time.fixedDeltaTime;
                 Frame = Mathf.FloorToInt(lerpFrame);
                 Frame2 = Mathf.CeilToInt(lerpFrame);
@@ -75,7 +78,7 @@ namespace Hitbox
                 if(Valid)
                     BeginRewind(this);
                 else
-                    Debug.LogError("Error rewinding");
+                    Debug.LogError($"Error Rewinding. {nameof(WorldFrame)}: {WorldFrame}, {this}");
             }
             
             private static bool IsFrameRewindValid(int frame) => frame >= WorldFrame - NumSnapshots;
@@ -91,21 +94,17 @@ namespace Hitbox
 
             public override string ToString()
             {
-                if (!Valid)
-                    return "INVALID";
                 return Lerp ? $"{nameof(Frame)}: {Frame}, {nameof(Frame2)}: {Frame2}, {nameof(LerpVal)}: {LerpVal}" 
                             : $"{nameof(Frame)}: {Frame}";
             }
         }
 
-        [RuntimeInitializeOnLoadMethod] private static void Init() { var go = Clock; } // needed to JIT?
+        [RuntimeInitializeOnLoadMethod] 
+        private static void Init() { var go = Clock; } // needed to JIT?
         //shitty cached singleton pattern because we need a GO to get FixedUpdate and start recording.
         //call it a 'Global Behavior' to feel better.
         private static TimePhysicsClock _clock;
-        public static TimePhysicsClock Clock =>
-            _clock 
-            ?? (_clock = Object.FindObjectOfType<TimePhysicsClock>()) 
-            ?? (_clock = GetNewInstance()); 
+        public static TimePhysicsClock Clock => _clock ?? (_clock = Object.FindObjectOfType<TimePhysicsClock>() ?? GetNewInstance());
         
         private static TimePhysicsClock GetNewInstance()
         {
@@ -140,64 +139,81 @@ namespace Hitbox
             RegisteredHitboxBodies.Remove (hitBoxBody);
         }
     
-        public static bool Raycast(Vector3 position, Vector3 direction, float maxDistance, out RaycastHit raycastHit, LayerMask layerMask)
+        public static bool Raycast(Ray ray, out RaycastHit raycastHit, 
+            float maxDistance = Mathf.Infinity,
+            int layerMask = Physics.DefaultRaycastLayers,
+            QueryTriggerInteraction queryTriggerInteraction = QueryTriggerInteraction.UseGlobal)
         {
-            RewindRayHits(position, direction, maxDistance);
-            return Physics.Raycast(position, direction, out raycastHit, maxDistance, layerMask);
+            RewindRayHits(ref ray, maxDistance);
+            return Physics.Raycast(ray, out raycastHit, maxDistance, layerMask, queryTriggerInteraction);
         }
     
-        public static int RaycastNonAlloc(Vector3 position, Vector3 direction, float maxDistance, RaycastHit[] results, LayerMask layerMask)
+        public static int RaycastNonAlloc(Ray ray, RaycastHit[] results, 
+            float maxDistance = Mathf.Infinity,
+            int layerMask = Physics.DefaultRaycastLayers,
+            QueryTriggerInteraction queryTriggerInteraction = QueryTriggerInteraction.UseGlobal)
         {
-            RewindRayHits(position, direction, maxDistance);
-            return Physics.RaycastNonAlloc(position, direction, results, maxDistance, layerMask);
+            RewindRayHits(ref ray, maxDistance);
+            return Physics.RaycastNonAlloc(ray, results, maxDistance, layerMask, queryTriggerInteraction);
         }
     
-        public static bool SphereCast(Vector3 origin, float radius, Vector3 direction, float maxDistance, 
-            out RaycastHit raycastHit, LayerMask layerMask)
+        public static bool SphereCast(Ray ray, float radius, out RaycastHit raycastHit, 
+            float maxDistance = Mathf.Infinity,
+            int layerMask = Physics.DefaultRaycastLayers,
+            QueryTriggerInteraction queryTriggerInteraction = QueryTriggerInteraction.UseGlobal)
         {
-            var bounds1 = new Bounds(origin, radius * 2f * Vector3.one);
-            var bounds2 = new Bounds(origin + direction * maxDistance, radius * 2f * Vector3.one);
+            var bounds1 = new Bounds(ray.origin, radius * 2f * Vector3.one);
+            var bounds2 = new Bounds(ray.GetPoint(maxDistance), radius * 2f * Vector3.one);
             bounds1.Encapsulate(bounds2);
             
             RewindBoundsHits(ref bounds1);
-            return Physics.SphereCast(origin, radius, direction, out raycastHit, maxDistance, layerMask);
+            return Physics.SphereCast(ray, radius, out raycastHit, maxDistance, layerMask, queryTriggerInteraction);
         }
 
-        public static int SphereCastNonAlloc(Vector3 origin, float radius, Vector3 direction,
-            RaycastHit[] results, float maxDistance, LayerMask layerMask)
+        public static int SphereCastNonAlloc(Ray ray, float radius, RaycastHit[] results,
+            float maxDistance = Mathf.Infinity,
+            int layerMask = Physics.DefaultRaycastLayers,
+            QueryTriggerInteraction queryTriggerInteraction = QueryTriggerInteraction.UseGlobal)
         {
-            var bounds1 = new Bounds(origin, radius * 2f * Vector3.one);
-            var bounds2 = new Bounds(origin + direction * maxDistance, radius * 2f * Vector3.one);
+            var bounds1 = new Bounds(ray.origin, radius * 2f * Vector3.one);
+            var bounds2 = new Bounds(ray.GetPoint(maxDistance), radius * 2f * Vector3.one);
             bounds1.Encapsulate(bounds2);
             
             RewindBoundsHits(ref bounds1);
-            return Physics.SphereCastNonAlloc(origin, radius, direction, results, maxDistance, layerMask);
+            return Physics.SphereCastNonAlloc(ray, radius, results, maxDistance, layerMask, queryTriggerInteraction);
         }
         
-        public static bool BoxCast(Vector3 center, Vector3 halfExtents, Vector3 direction, Quaternion orientation, 
-            float maxDistance, out RaycastHit raycastHit, LayerMask layerMask)
-        {
-            var bounds1 = new Bounds(center, halfExtents * 2f);
-            var bounds2 = new Bounds(center + direction * maxDistance, halfExtents * 2f);
-            bounds1.Encapsulate(bounds2);
-            
-            RewindBoundsHits(ref bounds1);
-            return Physics.BoxCast(center, halfExtents, direction, out raycastHit, orientation, maxDistance, layerMask);
-        }
-        
-        public static int BoxCastNonAlloc(Vector3 center, Vector3 halfExtents, Vector3 direction, Quaternion orientation, 
-            float maxDistance, RaycastHit[] results, LayerMask layerMask)
+        public static bool BoxCast(Vector3 center, Vector3 halfExtents, Vector3 direction, out RaycastHit raycastHit,
+            Quaternion orientation,
+            float maxDistance = Mathf.Infinity,
+            int layerMask = Physics.DefaultRaycastLayers,
+            QueryTriggerInteraction queryTriggerInteraction = QueryTriggerInteraction.UseGlobal)
         {
             var bounds1 = new Bounds(center, halfExtents * 2f);
             var bounds2 = new Bounds(center + direction * maxDistance, halfExtents * 2f);
             bounds1.Encapsulate(bounds2);
             
             RewindBoundsHits(ref bounds1);
-            return Physics.BoxCastNonAlloc(center, halfExtents, direction, results, orientation, maxDistance, layerMask);
+            return Physics.BoxCast(center, halfExtents, direction, out raycastHit, orientation, maxDistance, layerMask, queryTriggerInteraction);
         }
         
-        public static bool CapsuleCast(Vector3 point1, Vector3 point2, float radius, Vector3 direction, float maxDistance, 
-            out RaycastHit raycastHit, LayerMask layerMask)
+        public static int BoxCastNonAlloc(Vector3 center, Vector3 halfExtents, Vector3 direction, RaycastHit[] results, Quaternion orientation, 
+            float maxDistance = Mathf.Infinity,
+            int layerMask = Physics.DefaultRaycastLayers,
+            QueryTriggerInteraction queryTriggerInteraction = QueryTriggerInteraction.UseGlobal)
+        {
+            var bounds1 = new Bounds(center, halfExtents * 2f);
+            var bounds2 = new Bounds(center + direction * maxDistance, halfExtents * 2f);
+            bounds1.Encapsulate(bounds2);
+            
+            RewindBoundsHits(ref bounds1);
+            return Physics.BoxCastNonAlloc(center, halfExtents, direction, results, orientation, maxDistance, layerMask, queryTriggerInteraction);
+        }
+        
+        public static bool CapsuleCast(Vector3 point1, Vector3 point2, float radius, Vector3 direction, out RaycastHit raycastHit,
+            float maxDistance = Mathf.Infinity,
+            int layerMask = Physics.DefaultRaycastLayers,
+            QueryTriggerInteraction queryTriggerInteraction = QueryTriggerInteraction.UseGlobal)
         {
             var pointDelta = point2 - point1;
             var bounds1 = new Bounds(
@@ -216,11 +232,13 @@ namespace Hitbox
             bounds1.Encapsulate(bounds2);
             
             RewindBoundsHits(ref bounds1);
-            return Physics.CapsuleCast(point1, point2, radius, direction, out raycastHit, maxDistance, layerMask);
+            return Physics.CapsuleCast(point1, point2, radius, direction, out raycastHit, maxDistance, layerMask, queryTriggerInteraction);
         }
         
-        public static int CapsuleCastNonAlloc(Vector3 point1, Vector3 point2, float radius, Vector3 direction, float maxDistance, 
-            RaycastHit[] results, LayerMask layerMask)
+        public static int CapsuleCastNonAlloc(Vector3 point1, Vector3 point2, float radius, Vector3 direction, RaycastHit[] results, 
+            float maxDistance = Mathf.Infinity,
+            int layerMask = Physics.DefaultRaycastLayers,
+            QueryTriggerInteraction queryTriggerInteraction = QueryTriggerInteraction.UseGlobal)
         {
             var pointDelta = point2 - point1;
             var bounds1 = new Bounds(
@@ -239,47 +257,52 @@ namespace Hitbox
             bounds1.Encapsulate(bounds2);
             
             RewindBoundsHits(ref bounds1);
-            return Physics.CapsuleCastNonAlloc(point1, point2, radius, direction, results, maxDistance, layerMask);
+            return Physics.CapsuleCastNonAlloc(point1, point2, radius, direction, results, maxDistance, layerMask, queryTriggerInteraction);
         }
         
-        public static int OverlapSphereNonAlloc(Vector3 position, float radius, Collider[] results, LayerMask layerMask)
+        public static int OverlapSphereNonAlloc(Vector3 position, float radius, Collider[] results, 
+            int layerMask = Physics.AllLayers, 
+            QueryTriggerInteraction queryTriggerInteraction = QueryTriggerInteraction.UseGlobal)
         {
             var bounds = new Bounds(position, radius * 2f * Vector3.one);
             
             RewindBoundsHits(ref bounds);
-            return Physics.OverlapSphereNonAlloc(position, radius, results, layerMask);
+            return Physics.OverlapSphereNonAlloc(position, radius, results, layerMask, queryTriggerInteraction);
         }
         
-        public static int OverlapBoxNonAlloc(Vector3 center, Vector3 halfExtents, Collider[] results, Quaternion orientation, LayerMask layerMask)
+        public static int OverlapBoxNonAlloc(Vector3 center, Vector3 halfExtents, Collider[] results, Quaternion orientation,
+            int layerMask = Physics.AllLayers, 
+            QueryTriggerInteraction queryTriggerInteraction = QueryTriggerInteraction.UseGlobal)
         {
             var bounds = new Bounds(center, halfExtents * 2f);
             
             RewindBoundsHits(ref bounds);
-            return Physics.OverlapBoxNonAlloc(center, halfExtents, results, orientation, layerMask);
+            return Physics.OverlapBoxNonAlloc(center, halfExtents, results, orientation, layerMask, queryTriggerInteraction);
         }
 
-        public static int OverlapCapsuleNonAlloc(Vector3 point1, Vector3 point2, float radius,
-            Collider[] results, LayerMask layerMask)
+        public static int OverlapCapsuleNonAlloc(Vector3 point1, Vector3 point2, float radius, Collider[] results, 
+            int layerMask = Physics.AllLayers, 
+            QueryTriggerInteraction queryTriggerInteraction = QueryTriggerInteraction.UseGlobal)
         {
             var bounds = new Bounds(
                 point1 + (point2 - point1) * .5f, 
                 new Vector3(radius * 2f, Mathf.Abs(point2.y - point1.y) + radius * 2f, radius * 2f));
             
             RewindBoundsHits(ref bounds);
-            return Physics.OverlapCapsuleNonAlloc(point1, point2, radius, results, layerMask);
+            return Physics.OverlapCapsuleNonAlloc(point1, point2, radius, results, layerMask, queryTriggerInteraction);
         }
 
-        private static void RewindRayHits(Vector3 position, Vector3 direction, float maxDistance)
+        private static void RewindRayHits(ref Ray ray, float maxDistance)
         {
             if (!IsWorldRewound)
                 return;
             Profiler.BeginSample("Ray Checking");
-            var ray = new Ray(position, direction);
-
             foreach(var body in RegisteredHitboxBodies)
-                if (body.Raycast(ref ray, maxDistance))
-                    RewindBody(body);
-
+                if (body != WorldRewindState.IgnoreBody && body.Raycast(ref ray, maxDistance))
+                    RewindBody(body);      
+#if UNITY_2017_2_OR_NEWER
+            if (!Physics.autoSyncTransforms) Physics.SyncTransforms();
+#endif
             Profiler.EndSample();
         }
 
@@ -289,8 +312,11 @@ namespace Hitbox
                 return;
             Profiler.BeginSample("Bounds Checking");
             foreach (var body in RegisteredHitboxBodies)
-                if (body.OverlapBounds(ref bounds))
+                if (body != WorldRewindState.IgnoreBody && body.OverlapBounds(ref bounds))
                     RewindBody(body);
+#if UNITY_2017_2_OR_NEWER
+            if (!Physics.autoSyncTransforms) Physics.SyncTransforms();
+#endif
             Profiler.EndSample();
         }
 
@@ -311,6 +337,9 @@ namespace Hitbox
             foreach (HitboxBody hb in RewoundHitboxBodies)
                 hb.Restore();
             RewoundHitboxBodies.Clear();
+#if UNITY_2017_2_OR_NEWER
+            if (!Physics.autoSyncTransforms) Physics.SyncTransforms();
+#endif
             IsWorldRewound = false;
         }
     }

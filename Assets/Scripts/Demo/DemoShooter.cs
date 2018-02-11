@@ -24,24 +24,17 @@ namespace Demo
 
         public int HitCount { get; private set; }
         
-        private LayerMask _defaultLayer;
         private Camera _cam;
         public Camera Camera => _cam ?? (_cam = GetComponent<Camera>());
         
         private DemoShooterDebug _shooterDebug;
         public DemoShooterDebug ShooterDebug => _shooterDebug ?? (_shooterDebug = GetComponent<DemoShooterDebug>());
-        
-        public void Awake()
-        {
-            _defaultLayer = LayerMask.GetMask("Default");
-        }
 
         public struct Command
         {
             public bool Primary;
             public bool Secondary;
-            public Vector3 Position;
-            public Vector3 Direction;
+            public Ray Ray;
 
             // Whether we need to rewind to execute this command
             public bool Rewind => Primary || Secondary;
@@ -54,8 +47,7 @@ namespace Demo
             {
                 Primary = Input.GetKeyDown(KeyCode.Mouse0) || currentCommand.Primary,
                 Secondary = Input.GetKeyDown(KeyCode.Mouse1) || currentCommand.Secondary,
-                Position = camRay.origin,
-                Direction = camRay.direction
+                Ray = camRay
             };
         }
 
@@ -74,19 +66,19 @@ namespace Demo
         {
             if (!cmd.Rewind) // don't rewind if we don't have to
                 return;
+            var ping = Random.Range(Ping - PingJitter, Ping + PingJitter);
             Profiler.BeginSample("Rewind & Cast");
-            using (TimePhysics.RewindSeconds(Random.Range(Ping - PingJitter, Ping + PingJitter))) // or using (TimePhysics.RewindFrames(FrameDelay))
+            using (TimePhysics.RewindSeconds(ping)) // or using (TimePhysics.RewindFrames(FrameDelay))
             {
-                //perform all raycasts for this rewindframe within block
-                //proximity colliders have moved, will be reset after scope
+                //perform all raycasts for this rewindframe within the 'using' block
                 if (cmd.Primary)
                 {
-                    //Shoot(cmd.Frame, cmd.Position, cmd.Direction, Distance);
-                    Spherecast(cmd.Position, .25f, cmd.Direction, Distance);
+                    //Shoot(cmd.Ray, Distance);
+                    Spherecast(cmd.Ray, .25f, Distance);
                 }
                 if (cmd.Secondary)
                 {
-                    AOE(cmd.Position, 10f, cmd.Direction, Distance);
+                    AOE(cmd.Ray.origin, 10f, Distance);
                 }
             }
             Profiler.EndSample();
@@ -94,12 +86,12 @@ namespace Demo
 
 //example usage snippet
 /*
-private void Shoot(Vector3 origin, Vector3 direction, float distance, int layer)
+private void Shoot(Ray ray)
 {
     using (TimePhysics.RewindSeconds(Ping))
     {
         RaycastHit hit;
-        if (TimePhysics.Raycast(origin, direction, distance, out hit, layer))
+        if (TimePhysics.Raycast(ray, out hit))
         {
             // hit code
         }
@@ -107,42 +99,39 @@ private void Shoot(Vector3 origin, Vector3 direction, float distance, int layer)
 }
 */
 
-        public void Shoot(Vector3 origin, Vector3 direction, float distance)
+        public void Shoot(Ray ray, float distance)
         {
             RaycastHit hit;
-            if (TimePhysics.Raycast(origin, direction, distance, out hit, _defaultLayer))
+            if (TimePhysics.Raycast(ray, out hit, distance))
             {
                 var marker = hit.collider.GetComponent<HitboxMarkerDebug>();
                 if (marker != null && TimePhysics.DebugMode)
                     ShooterDebug?.DebugHitRewind(marker, 2f);
-
                 HitCount++;
             }
             
         }
         
-        public void AOE(Vector3 origin, float radius, Vector3 direction, float distance)
+        public void AOE(Vector3 origin, float radius, float distance)
         {
-            var hits = TimePhysics.OverlapSphereNonAlloc(origin, radius, ColliderCache, _defaultLayer);
+            var hits = TimePhysics.OverlapSphereNonAlloc(origin, radius, ColliderCache);
             for (int i = 0; i < hits; i++)
             {
                 var marker = ColliderCache[i].GetComponent<HitboxMarkerDebug>();
                 if (marker != null && TimePhysics.DebugMode)
                     ShooterDebug?.DebugHitRewind(marker, 1f);
-
                 HitCount++;
             }
         }
 
-        public void Spherecast(Vector3 origin, float radius, Vector3 direction, float distance)
+        public void Spherecast(Ray ray, float radius, float distance)
         {
-            var hits = TimePhysics.SphereCastNonAlloc(origin, radius, direction, HitsCache, distance, _defaultLayer);
+            var hits = TimePhysics.SphereCastNonAlloc(ray, radius, HitsCache, distance);
             for (int i = 0; i < hits; i++)
             {
                 var marker = HitsCache[i].collider.GetComponent<HitboxMarkerDebug>();
                 if (marker != null && TimePhysics.DebugMode)
                     ShooterDebug?.DebugHitRewind(marker, 1f);
-                
                 HitCount++;
             }
         }
