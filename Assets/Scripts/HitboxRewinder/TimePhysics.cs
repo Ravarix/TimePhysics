@@ -27,9 +27,28 @@ namespace Hitbox
             = false;
         #endif
 
-        //disposable access pattern
-        public static RewindState RewindWorld(int frame, HitboxBody ignore = null) => new RewindState(frame, ignore);
+        /// <summary>
+        /// Rewind the World *to* a specific fixed frame.
+        /// </summary>
+        /// <param name="frame">Frame to rewind to</param>
+        /// <param name="ignore">HitboxBody to ignore</param>
+        /// <returns></returns>
+        public static RewindState RewindToFrame(int frame, HitboxBody ignore = null) => new RewindState(frame, ignore);
+        
+        /// <summary>
+        /// Rewind the World *by* a number of fixed frames.
+        /// </summary>
+        /// <param name="frames">Number of Frames to rewind by</param>
+        /// <param name="ignore">HitboxBody to ignore</param>
+        /// <returns></returns>
         public static RewindState RewindFrames(int frames, HitboxBody ignore = null) => new RewindState(WorldFrame - frames, ignore);
+        
+        /// <summary>
+        /// Rewind the world *by* a number of seconds.
+        /// </summary>
+        /// <param name="seconds">Number of seconds to rewind by</param>
+        /// <param name="ignore">HitboxBody to ignore</param>
+        /// <returns></returns>
         public static RewindState RewindSeconds(float seconds, HitboxBody ignore = null) => new RewindState(seconds, ignore); 
         
         public struct RewindState : IDisposable
@@ -99,8 +118,11 @@ namespace Hitbox
             }
         }
 
-        [RuntimeInitializeOnLoadMethod] 
-        private static void Init() { var go = Clock; } // needed to JIT?
+        [RuntimeInitializeOnLoadMethod]
+        private static void Init()
+        {
+            var go = Clock; // needed to JIT?
+        } 
         //shitty cached singleton pattern because we need a GO to get FixedUpdate and start recording.
         //call it a 'Global Behavior' to feel better.
         private static TimePhysicsClock _clock;

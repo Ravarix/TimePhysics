@@ -2646,11 +2646,11 @@ MonoBehaviour:
   RoamDistance: 10
   Speed: 5
   StoppingDistance: 0.5
-  Shoot: 0
+  Shoot: 1
   BasePingMs: 80
   PingRandomMs: 100
   ShootHeight: 1.1
-  ShootDistance: 5
+  ShootDistance: 10
   ShootFrequency: 0.1
   ShootRandom: 0.2
   ShotColor: {r: 0, g: 1, b: 1, a: 0.5}

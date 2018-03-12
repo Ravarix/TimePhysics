@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Unitilities;
 using UnityEngine;
 using UnityEngine.Profiling;
@@ -8,11 +9,11 @@ namespace Hitbox
     
     public class HitboxBody : MonoBehaviour
     {
-        [Tooltip("How many framesMust be factor of TimePhysics.NumSnapshots")]
+        [Tooltip("Must be factor of TimePhysics.NumSnapshots. 1 = Every frame")]
         [Range(1, TimePhysics.NumSnapshots)]
         [SerializeField] private int _snapshotInterval = 1;
         public int SnapshotInterval => _snapshotInterval;
-        [SerializeField] private Bounds _bounds = new Bounds(new Vector3(0, 1f, 0f), new Vector3(2f, 2f, 2f));
+        [SerializeField] private Bounds _bounds = new Bounds(Vector3.up, Vector3.one * 2f);
         public Bounds Bounds => _bounds;
         [SerializeField] private Transform[] _transforms;
         public Transform[] Transforms { get { return _transforms; } set { _transforms = value; }}
@@ -21,6 +22,7 @@ namespace Hitbox
 
         private bool _isRewound;
         private HitboxSnapshot _restoreSnapshot;
+        private int _startFrame;
 
         private void Awake()
         {
@@ -29,7 +31,7 @@ namespace Hitbox
             // Validate all the target hitboxes are populated.
             if (_transforms.Any(entry => entry == null))
             {
-                Debug.LogError("At least one hitbox in hitbox body is null: " + name, this);
+                Debug.LogError($"At least one hitbox in hitbox body is null: {name}", this);
                 _transforms = _transforms.Where(entry => entry != null).ToArray();
                 return;
             }
@@ -53,7 +55,8 @@ namespace Hitbox
 
         private void OnEnable()
         {
-           TimePhysics.RegisterHitboxBody(this);
+            TimePhysics.RegisterHitboxBody(this);
+            _startFrame = TimePhysics.WorldFrame;
         }
 
         private void OnDisable()
@@ -79,9 +82,7 @@ namespace Hitbox
                         snapShot.LocalToWorld[hitboxIndex] = _transforms[hitboxIndex].localToWorldMatrix;
                 }
                 else
-                {
                     snapShot.Real = false;
-                }
             }
             else
                 Debug.LogError($"Requesting snapshot frame <= current snapshot frame: {frame}, Current: {CurrentSnapshotFrame}", this);
@@ -138,6 +139,9 @@ namespace Hitbox
 
         public bool OverlapBounds(ref Bounds bounds)
         {
+            if (TimePhysics.WorldRewindState.Frame <= _startFrame)
+                return false;
+            
             if(!TimePhysics.WorldRewindState.Lerp && TimePhysics.WorldRewindState.Frame % _snapshotInterval == 0)
                 return InternalOverlapBounds(TimePhysics.WorldRewindState.Frame % TimePhysics.NumSnapshots, ref bounds);
             
@@ -148,6 +152,9 @@ namespace Hitbox
 
         public bool Raycast(ref Ray ray, float maxDistance)
         {
+            if (TimePhysics.WorldRewindState.Frame <= _startFrame)
+                return false;
+            
             if (!TimePhysics.WorldRewindState.Lerp && TimePhysics.WorldRewindState.Frame % _snapshotInterval == 0)
                 return InternalRaycast(TimePhysics.WorldRewindState.Frame % TimePhysics.NumSnapshots, ref ray, maxDistance);
             
@@ -234,11 +241,8 @@ namespace Hitbox
                 return false;
             
             if (!TimePhysics.WorldRewindState.Lerp && TimePhysics.WorldRewindState.Frame % _snapshotInterval == 0)
-            {
                 InternalRewind(TimePhysics.WorldRewindState.Frame % TimePhysics.NumSnapshots);
-            }
-            else
-            {
+            else {
                 int index1, index2;
                 var lerpVal = LerpFrame(out index1, out index2);
                 InternalRewindLerp(index1, index2, lerpVal);

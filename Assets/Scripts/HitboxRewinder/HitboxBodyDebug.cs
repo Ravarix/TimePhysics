@@ -53,7 +53,7 @@ public class HitboxBodyDebug : MonoBehaviour
             var index = frame % TimePhysics.NumSnapshots;
             var snapShot = body.Snapshots[index];
             
-            for(int hitboxIndex = 0; hitboxIndex < body.Transforms.Length; hitboxIndex++)
+            for (int hitboxIndex = 0; hitboxIndex < body.Transforms.Length; hitboxIndex++)
                 DrawMarkerGizmo(
                     snapShot.LocalToWorld[hitboxIndex], 
                     _hitboxMarkersDebug[hitboxIndex], 
@@ -82,11 +82,9 @@ public class HitboxBodyDebug : MonoBehaviour
             var proxSnapshot1 = body.Snapshots[index1].ProximityBounds;
             var proxSnapshot2 = body.Snapshots[index2].ProximityBounds;
             var lerpBounds = MatrixUtils.LerpBounds(ref proxSnapshot1, ref proxSnapshot2, lerpVal);
-            
             Gizmos.color = _proximityColor;
             Gizmos.matrix = Matrix4x4.identity;
             Gizmos.DrawWireCube(lerpBounds.center, lerpBounds.size);
-                
         }
     }
     
@@ -95,8 +93,7 @@ public class HitboxBodyDebug : MonoBehaviour
         Gizmos.color = color;
         Gizmos.matrix = matrix;
         
-        switch (markerDebug.Shape)
-        {
+        switch (markerDebug.Shape) {
             case ColliderShape.Box:
                 if (wire)
                     Gizmos.DrawWireCube(markerDebug.BoxCollider.center, markerDebug.BoxCollider.size);
@@ -136,10 +133,8 @@ public class HitboxBodyDebug : MonoBehaviour
                         Gizmos.DrawLine(markerDebug.Point1.Add(z: -markerDebug.Radius), markerDebug.Point2.Add(z: -markerDebug.Radius));
                     }
                 }
-                else
-                {
+                else 
                     Gizmos.DrawMesh(markerDebug.Mesh, markerDebug.Pos, markerDebug.Rot, markerDebug.Scale);
-                }
                 break;
         }
     }

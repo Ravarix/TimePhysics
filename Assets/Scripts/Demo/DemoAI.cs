@@ -29,7 +29,9 @@ namespace Demo
         
         private DemoShooterDebug _shooterDebug;
         public DemoShooterDebug ShooterDebug => _shooterDebug ?? (_shooterDebug = GetComponent<DemoShooterDebug>());
-
+        private HitboxBody _hitboxBody;
+        private HitboxBody HitboxBody => _hitboxBody ?? (_hitboxBody = GetComponent<HitboxBody>());
+        
         private float _shotCooldown = 1f; //wait a second for history to build
 
         private void Start()
@@ -71,7 +73,7 @@ namespace Demo
             //convert ping to float seconds
             var ping = (BasePingMs + Random.Range(0, PingRandomMs)) / 1000f;
 
-            using (TimePhysics.RewindSeconds(ping))
+            using (TimePhysics.RewindSeconds(ping, HitboxBody))
             {
                 Ray ray = new Ray(Transform.position + Vector3.up * ShootHeight, Transform.forward * ShootDistance);
                 RaycastHit hit;
