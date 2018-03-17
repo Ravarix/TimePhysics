@@ -1,29 +1,15 @@
 ---
 layout: default
 ---
+# [](#header-1)Simple Lag Compensation for Unity
 
-Text can be **bold**, _italic_, ~~strikethrough~~ or `keyword`.
+Based on [industry standard](https://developer.valvesoftware.com/wiki/Source_Multiplayer_Networking#Lag_compensation) latency compensation mechanics.
 
-[Link to another page](another-page).
-
-There should be whitespace between paragraphs.
-
-There should be whitespace between paragraphs. We recommend including a README, or a file with information about your project.
-
-# [](#header-1)Header 1
-
-This is a normal paragraph following a header. GitHub is a code hosting platform for version control and collaboration. It lets you and others work together on projects from anywhere.
-
-## [](#header-2)Header 2
-
-> This is a blockquote following a header.
->
-> When something is important enough, you do it even if the odds are not in your favor.
-
-### [](#header-3)Header 3
+### [](#header-2)Simple API
+Supports all Unity Physics Cast functions, including Sphere/Box/CapsuleCast.
 
 ```csharp
-private void Shoot(Ray ray)
+void Shoot(Ray ray)
 {
     using (TimePhysics.RewindSeconds(Ping))
     {
@@ -36,12 +22,23 @@ private void Shoot(Ray ray)
 }
 ```
 
-```ruby
-# Ruby code with syntax highlighting
-GitHubPages::Dependencies.gems.each do |gem, version|
-  s.add_dependency(gem, "= #{version}")
-end
-```
+#### [](#header-3)Network Agnostic
+There are many different networking solutions in Unity. TimePhysics makes no opinions on which to use, simply supports three kinds of rewinds:
+
+| Method        | Description                                   | Notes                                                |
+|:--------------|:----------------------------------------------|:-----------------------------------------------------|
+| RewindSeconds | Takes a `float` of how many seconds to rewind | Useful for Ping based rewinding                      |
+| RewindFrames  | Takes an int of how many frames to rewind by  | Useful if tracking Player Frame Delay                |
+| RewindToFrame | Takes an int of which frame to rewind to      | Useful if the frame is encoded in the Player Command |
+
+
+#### [](#header-3)Zero Allocations
+TimePhysics' `using` syntax takes care of restoring transforms without GC allocations.
+
+
+#### [](#header-3)Highly Performant
+Only rewinds the transforms that have a chance of being hit by the cast, greatly reducing the weight on the Physics engine.
+
 
 #### [](#header-4)Header 4
 
