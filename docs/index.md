@@ -22,11 +22,17 @@ This is a normal paragraph following a header. GitHub is a code hosting platform
 
 ### [](#header-3)Header 3
 
-```js
-// Javascript code with syntax highlighting.
-var fun = function lang(l) {
-  dateformat.i18n = require('./lang/' + l)
-  return true;
+```csharp
+private void Shoot(Ray ray)
+{
+    using (TimePhysics.RewindSeconds(Ping))
+    {
+        RaycastHit hit;
+        if (TimePhysics.Raycast(ray, out hit))
+        {
+            // hit code
+        }
+    }
 }
 ```
 
