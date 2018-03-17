@@ -7,7 +7,6 @@ Based on [industry standard](https://developer.valvesoftware.com/wiki/Source_Mul
 
 ![](https://developer.valvesoftware.com/w/images/c/ca/Lag_compensation.jpg)
 
-
 ### [](#header-2)Simple API
 Supports all Unity Physics Cast functions, including Sphere/Box/CapsuleCast.
 
@@ -28,11 +27,11 @@ void Shoot(Ray ray)
 #### [](#header-3)Network Agnostic
 There are many different networking solutions in Unity. TimePhysics makes no opinions on which to use, simply supports three kinds of rewinds:
 
-| Method        | Description                                    | Notes                                                |
-|:--------------|:-----------------------------------------------|:-----------------------------------------------------|
-| *RewindSeconds* | Takes a `float` of how many seconds to rewind  | Useful for Ping based rewinding                      |
-| *RewindFrames*  | Takes an `int` of how many Fixed Frames to rewind by | Useful if tracking Player Frame Delay                |
-| *RewindToFrame* | Takes an `int` of which Fixed Frame to rewind to     | Useful if the frame is encoded in the Player Command |
+| Method        | Description                                   | Notes                                                |
+|:--------------|:----------------------------------------------|:-----------------------------------------------------|
+| **RewindSeconds** | `float`: how many seconds to rewind       | Useful for Ping based rewinding                      |
+| **RewindFrames**  | `int`: how many Fixed Frames to rewind by | Useful if tracking Player Frame Delay                |
+| **RewindToFrame** | `int`: which Fixed Frame to rewind to     | Useful if the frame is encoded in the Player Command |
 
 
 #### [](#header-3)Zero Allocations
