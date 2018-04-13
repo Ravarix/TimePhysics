@@ -15,7 +15,8 @@ namespace Demo
         public bool Shoot = true;
         public int BasePingMs = 80;
         public int PingRandomMs = 100;
-        public float ShootHeight = 1.5f;
+        public GameObject RayOrigin;
+        public float SphereRadius = .25f;
         public float ShootDistance = 5f;
         public float ShootFrequency = 2f;
         public float ShootRandom = 5f;
@@ -75,10 +76,10 @@ namespace Demo
 
             using (TimePhysics.RewindSeconds(ping, HitboxBody))
             {
-                Ray ray = new Ray(Transform.position + Vector3.up * ShootHeight, Transform.forward * ShootDistance);
+                Ray ray = new Ray(RayOrigin.transform.position, RayOrigin.transform.forward * ShootDistance);
                 RaycastHit hit;
                 Debug.DrawRay(ray.origin, ray.direction, ShotColor);
-                if(TimePhysics.Raycast(ray, out hit, ShootDistance, LayerMask.GetMask("Default")))
+                if(TimePhysics.SphereCast(ray, SphereRadius, out hit, ShootDistance))
                 {
                     var marker = hit.collider.GetComponent<HitboxMarkerDebug>();
                     if (marker != null && TimePhysics.DebugMode)

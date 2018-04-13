@@ -67,7 +67,7 @@ namespace Hitbox
                 Lerp = false;
                 Frame2 = frame;
                 LerpVal = 0f;
-                Valid = IsFrameRewindValid(frame);
+                Valid = IsFrameRewindValid(frame) && !IsWorldRewound;
                 
                 if(Valid)
                     BeginRewind(this);
@@ -92,7 +92,7 @@ namespace Hitbox
                     Frame = Frame2;
                     Lerp = false;
                 }
-                Valid = Lerp ? IsLerpRewindValid(lerpFrame) : IsFrameRewindValid(Frame);
+                Valid = (Lerp ? IsLerpRewindValid(lerpFrame) : IsFrameRewindValid(Frame)) && !IsWorldRewound;
                 
                 if(Valid)
                     BeginRewind(this);
